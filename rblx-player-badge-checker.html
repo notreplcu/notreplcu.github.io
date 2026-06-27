@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Badge Checker</title>
+<style>
+  :root{
+    --bg: #1f1f1f;
+    --bg-soft: #262626;
+    --card: #2c2c2c;
+    --card-border: #3a3a3a;
+    --text: #e9e9e9;
+    --text-dim: #b9b9b9;
+    --accent-yes: #1fcf2c;
+    --accent-no: #ff3b3b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position: relative;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid #3a3a3a;
+    padding: 28px 20px;
+  }
+  .icon-btn{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#1c1c1c;
+    border:1px solid #3a3a3a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    color: var(--text);
+  }
+  .icon-btn svg{ width:18px; height:18px; }
+  .topbar h1{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%, -50%);
+    margin:0;
+    font-size:1.7rem;
+    font-style: italic;
+    font-weight:700;
+    letter-spacing:0.3px;
+    white-space: nowrap;
+  }
+
+  .credit{
+    position: fixed;
+    right: 18px;
+    bottom: 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#8a8a8a;
+    font-size:0.75rem;
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .credit svg{
+    width:18px;
+    height:18px;
+    flex:0 0 auto;
+    color:#cf8b3a;
+  }
+  @media (max-width: 700px){
+    .credit span{ display:none; }
+  }
+
+  /* ---------- Main layout ---------- */
+  main{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 70px 20px 60px;
+  }
+
+  .columns{
+    display:flex;
+    gap:40px;
+    justify-content:center;
+    flex-wrap: wrap;
+  }
+
+  .card{
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    width: 420px;
+    max-width: 100%;
+    overflow:hidden;
+  }
+  .card h2{
+    text-align:center;
+    margin:0;
+    padding: 14px 0;
+    font-size:1.4rem;
+    font-style: italic;
+    font-weight:700;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .card input{
+    width:100%;
+    background: transparent;
+    border: none;
+    text-align:center;
+    color: var(--text);
+    font-size:1.6rem;
+    font-style: italic;
+    font-weight: 600;
+    padding: 22px 10px;
+    outline:none;
+    font-family: inherit;
+  }
+  .card input::placeholder{ color:#6b6b6b; }
+
+  .sublabel{
+    text-align:center;
+    margin-top:14px;
+    font-weight:700;
+    font-style: italic;
+    font-size:1.05rem;
+    color: var(--text);
+    min-height: 1.4em;
+    word-break: break-word;
+  }
+
+  /* ---------- Check button ---------- */
+  .check-wrap{
+    display:flex;
+    justify-content:center;
+    margin: 60px 0 50px;
+  }
+  .check-btn{
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size:1.6rem;
+    font-style: italic;
+    padding: 18px 110px;
+    cursor:pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .check-btn:hover{ background:#343434; }
+  .check-btn:active{ transform: scale(0.98); }
+  .check-btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
+  /* ---------- Status ---------- */
+  .status-card{
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 22px 20px;
+    text-align:center;
+  }
+  .status-card p{
+    margin:0;
+    font-weight:700;
+    font-style: italic;
+    font-size:1.15rem;
+  }
+  .status-yes{ color: var(--accent-yes); }
+  .status-no{ color: var(--accent-no); }
+
+  .previous{
+    text-align:center;
+    margin-top: 26px;
+  }
+  .previous p{
+    margin: 14px 0;
+    font-weight:700;
+    font-style: italic;
+    font-size:1.05rem;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .note{
+    text-align:center;
+    color:#777;
+    font-size:0.8rem;
+    margin-top:60px;
+    font-style: italic;
+  }
+
+  @media (max-width: 480px){
+    .check-btn{ padding: 16px 60px; }
+    .topbar h1{ font-size:1.2rem; margin-right:0; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <h1>Player Badge Checker</h1>
+  </div>
+
+  <div class="credit">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0c.6 3.6 2 6.6 4.4 9 2.4 2.4 5.4 3.8 9 4.4-3.6.6-6.6 2-9 4.4-2.4 2.4-3.8 5.4-4.4 9-.6-3.6-2-6.6-4.4-9-2.4-2.4-5.4-3.8-9-4.4 3.6-.6 6.6-2 9-4.4C10 6.6 11.4 3.6 12 0z"/>
+    </svg>
+    <span>made by claude.ai (because I'm too lazy to remake it myself)</span>
+  </div>
+
+  <main>
+    <div class="columns">
+      <div class="card">
+        <h2>User ID</h2>
+        <input id="userInput" type="text" inputmode="numeric" placeholder="Enter a user ID">
+      </div>
+      <div class="card">
+        <h2>Badge ID</h2>
+        <input id="badgeInput" type="text" inputmode="numeric" placeholder="Enter a badge ID">
+      </div>
+    </div>
+
+    <div class="columns" style="margin-top:10px;">
+      <div class="card" style="border:none; background:transparent; width:420px;">
+        <p class="sublabel" id="userLabel">user: ???</p>
+      </div>
+      <div class="card" style="border:none; background:transparent; width:420px;">
+        <p class="sublabel" id="badgeNameLabel">badge name: ???</p>
+      </div>
+    </div>
+
+    <div class="check-wrap">
+      <button class="check-btn" id="checkBtn">Check</button>
+    </div>
+
+    <div class="status-card">
+      <p id="statusLabel">player has badge: ???</p>
+    </div>
+
+    <div class="previous">
+      <p id="previousUserLabel">previous user: ???</p>
+      <p id="previousBadgeIdLabel">previous badge: ???</p>
+    </div>
+
+    <p class="note">Uses Roblox's public APIs (via a CORS proxy) to look up usernames, badge names, and badge ownership.</p>
+  </main>
+
+<script>
+  // Roblox's API does not send CORS headers, so a public CORS-enabled mirror
+  // (roproxy.com) is used to make these requests work from a browser.
+  const USERS_API = "https://users.roproxy.com/v1/users/";
+  const BADGES_API = "https://badges.roproxy.com/v1/badges/";
+  const AWARDED_API = "https://badges.roproxy.com/v1/users/";
+
+  const userInput = document.getElementById("userInput");
+  const badgeInput = document.getElementById("badgeInput");
+  const userLabel = document.getElementById("userLabel");
+  const badgeNameLabel = document.getElementById("badgeNameLabel");
+  const checkBtn = document.getElementById("checkBtn");
+  const statusLabel = document.getElementById("statusLabel");
+  const previousUserLabel = document.getElementById("previousUserLabel");
+  const previousBadgeIdLabel = document.getElementById("previousBadgeIdLabel");
+
+  let user = null;     // username of the currently looked-up user
+  let userId = null;   // numeric user id
+  let badgeName = null;
+  let badgeId = null;
+  let debounce = false;
+
+  function digitsOnly(str){
+    return str.replace(/\D+/g, "");
+  }
+
+  async function checkIfUserExists(input){
+    if(!input){ return false; }
+    try{
+      const res = await fetch(USERS_API + input);
+      if(!res.ok) return false;
+      const data = await res.json();
+      if(!data || !data.name) return false;
+      user = data.name;
+      userId = Number(input);
+      return true;
+    }catch(e){
+      console.error(e);
+      return false;
+    }
+  }
+
+  async function checkIfBadgeExists(input){
+    if(!input){ return false; }
+    try{
+      const res = await fetch(BADGES_API + input);
+      if(!res.ok) return false;
+      const data = await res.json();
+      if(!data || !data.name) return false;
+      badgeId = input;
+      badgeName = data.name;
+      return true;
+    }catch(e){
+      console.error(e);
+      return false;
+    }
+  }
+
+  async function checkIfPlayerHasBadge(){
+    const res = await fetch(AWARDED_API + userId + "/badges/awarded-dates?badgeIds=" + badgeId);
+    if(!res.ok) throw new Error("Request failed");
+    const data = await res.json();
+    return Array.isArray(data.data) && data.data.length > 0;
+  }
+
+  userInput.addEventListener("input", async () => {
+    const cleaned = digitsOnly(userInput.value);
+    if(cleaned !== userInput.value) userInput.value = cleaned;
+    const result = await checkIfUserExists(cleaned);
+    userLabel.textContent = result ? `user: ${user} (${userId})` : "user: ???";
+  });
+
+  badgeInput.addEventListener("input", async () => {
+    const cleaned = digitsOnly(badgeInput.value);
+    if(cleaned !== badgeInput.value) badgeInput.value = cleaned;
+    const result = await checkIfBadgeExists(cleaned);
+    badgeNameLabel.textContent = result ? `badge name: ${badgeName}` : "badge name: ???";
+  });
+
+  checkBtn.addEventListener("click", async () => {
+    if(debounce) return;
+    if(!userId || !badgeId){
+      statusLabel.textContent = "player has badge: ???";
+      statusLabel.className = "";
+      return;
+    }
+    debounce = true;
+    checkBtn.disabled = true;
+    try{
+      const has = await checkIfPlayerHasBadge();
+      if(has){
+        statusLabel.innerHTML = 'player has badge: <span class="status-yes">yes</span>';
+      }else{
+        statusLabel.innerHTML = 'player has badge: <span class="status-no">no</span>';
+      }
+      previousUserLabel.textContent = `previous user: ${user} (${userId})`;
+      previousBadgeIdLabel.textContent = `previous badge: ${badgeId}`;
+    }catch(e){
+      console.error(e);
+      statusLabel.textContent = "player has badge: error";
+    }
+    setTimeout(() => {
+      debounce = false;
+      checkBtn.disabled = false;
+    }, 2000);
+  });
+</script>
+</body>
+</html>
