@@ -284,11 +284,31 @@
     return str.replace(/\D+/g, "");
   }
 
+  // Roblox's API (and the roproxy mirror in front of it) occasionally returns
+  // a transient 502 "Request Context Failure: response code is not 200" error.
+  // This isn't caused by bad input — it's a brief upstream hiccup — so retry
+  // a couple of times with a short delay before giving up.
+  async function fetchWithRetry(url, attempts = 3, delayMs = 500){
+    let lastErr;
+    for(let i = 0; i < attempts; i++){
+      try{
+        const res = await fetch(url);
+        if(res.ok) return res;
+        lastErr = new Error("HTTP " + res.status);
+      }catch(e){
+        lastErr = e;
+      }
+      if(i < attempts - 1){
+        await new Promise(r => setTimeout(r, delayMs * (i + 1)));
+      }
+    }
+    throw lastErr;
+  }
+
   async function checkIfUserExists(input){
     if(!input){ return false; }
     try{
-      const res = await fetch(USERS_API + input);
-      if(!res.ok) return false;
+      const res = await fetchWithRetry(USERS_API + input);
       const data = await res.json();
       if(!data || !data.name) return false;
       user = data.name;
@@ -303,8 +323,7 @@
   async function checkIfBadgeExists(input){
     if(!input){ return false; }
     try{
-      const res = await fetch(BADGES_API + input);
-      if(!res.ok) return false;
+      const res = await fetchWithRetry(BADGES_API + input);
       const data = await res.json();
       if(!data || !data.name) return false;
       badgeId = input;
@@ -317,8 +336,7 @@
   }
 
   async function checkIfPlayerHasBadge(){
-    const res = await fetch(AWARDED_API + userId + "/badges/awarded-dates?badgeIds=" + badgeId);
-    if(!res.ok) throw new Error("Request failed");
+    const res = await fetchWithRetry(AWARDED_API + userId + "/badges/awarded-dates?badgeIds=" + badgeId);
     const data = await res.json();
     return Array.isArray(data.data) && data.data.length > 0;
   }
